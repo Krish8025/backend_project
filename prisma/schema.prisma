@@ -1,0 +1,98 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  MANAGER
+  SUPPORT
+  USER
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Role {
+  id    Int      @id @default(autoincrement())
+  name  RoleName @unique
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role_id    Int
+  created_at DateTime @default(now())
+
+  role              Role              @relation(fields: [role_id], references: [id])
+  created_tickets   Ticket[]          @relation("CreatedBy")
+  assigned_tickets  Ticket[]          @relation("AssignedTo")
+  comments          TicketComment[]
+  status_changes    TicketStatusLog[]
+
+  @@map("users")
+}
+
+model Ticket {
+  id           Int            @id @default(autoincrement())
+  title        String
+  description  String
+  status       TicketStatus   @default(OPEN)
+  priority     TicketPriority @default(MEDIUM)
+  created_by   Int
+  assigned_to  Int?
+  created_at   DateTime       @default(now())
+
+  creator      User              @relation("CreatedBy", fields: [created_by], references: [id])
+  assignee     User?             @relation("AssignedTo", fields: [assigned_to], references: [id])
+  comments     TicketComment[]
+  status_logs  TicketStatusLog[]
+
+  @@map("tickets")
+}
+
+model TicketComment {
+  id         Int      @id @default(autoincrement())
+  ticket_id  Int
+  user_id    Int
+  comment    String
+  created_at DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [user_id], references: [id])
+
+  @@map("ticket_comments")
+}
+
+model TicketStatusLog {
+  id         Int          @id @default(autoincrement())
+  ticket_id  Int
+  old_status TicketStatus
+  new_status TicketStatus
+  changed_by Int
+  changed_at DateTime     @default(now())
+
+  ticket  Ticket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  changer User   @relation(fields: [changed_by], references: [id])
+
+  @@map("ticket_status_logs")
+}
