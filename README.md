@@ -1,4 +1,5 @@
 # Testing Guide
+This project is created using NestJS and Prisma.
 
 Server must be running at http://localhost:3000 before testing.
 

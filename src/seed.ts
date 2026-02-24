@@ -4,9 +4,9 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log(' Seeding database...');
 
-  // Seed roles using string literals (Prisma 6 enums are not re-exported)
+
   for (const name of ['MANAGER', 'SUPPORT', 'USER'] as const) {
     await prisma.role.upsert({
       where: { name },
@@ -14,9 +14,9 @@ async function main() {
       create: { name },
     });
   }
-  console.log('✅ Roles seeded');
+  console.log(' Roles seeded');
 
-  // Seed MANAGER user
+
   const managerRole = await prisma.role.findUnique({ where: { name: 'MANAGER' } });
   const hashedPassword = await bcrypt.hash('admin123', 10);
 
@@ -31,8 +31,8 @@ async function main() {
     },
   });
 
-  console.log('✅ Manager user seeded: admin@example.com / admin123');
-  console.log('🎉 Seeding complete!');
+  console.log(' Manager user seeded: admin@example.com / admin123');
+  console.log(' Seeding complete!');
 }
 
 main()
